@@ -230,6 +230,26 @@ h1 {
   background: #e6b800;
 }
 
+.footer-credits {
+  margin-top: 24px;
+  font-size: 0.8rem;
+  color: #888;
+  line-height: 1.6;
+}
+
+.footer-credits a {
+  color: #ffcb05;
+  text-decoration: none;
+}
+
+.footer-credits a:hover {
+  text-decoration: underline;
+}
+
+.footer-credits p {
+  margin-bottom: 4px;
+}
+
 @media (max-width: 768px) {
   .app {
     flex-direction: column;
