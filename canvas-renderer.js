@@ -3,8 +3,8 @@
 // Rows are assigned dynamically by evolution family
 
 const CANVAS_PADDING = 40;
-const COL_WIDTH = 140;
-const COL_GAP = 20;
+const COL_WIDTH = 80;
+const COL_GAP = 8;
 const TRAINER_DRAW_SIZE = 64;
 const SPRITE_DRAW_SIZE = 64;
 const SPRITE_GAP = 8;
