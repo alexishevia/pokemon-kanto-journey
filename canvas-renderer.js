@@ -138,6 +138,26 @@ function renderJourney(canvas, journeyState) {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Draw alternating row backgrounds for pokemon area
+  const pokemonStartY = CANVAS_PADDING + LABEL_HEIGHT + trainerAreaHeight + TRAINER_POKEMON_GAP;
+  for (let r = 0; r < numRows; r++) {
+    if (r % 2 === 1) {
+      const rowY = pokemonStartY + r * (SPRITE_DRAW_SIZE + SPRITE_GAP) - SPRITE_GAP / 2;
+      const rowH = SPRITE_DRAW_SIZE + SPRITE_GAP;
+      ctx.fillStyle = "#f0f0f0";
+      ctx.fillRect(0, rowY, canvasWidth, rowH);
+    }
+  }
+
+  // Draw separator line between trainers and pokemon
+  const separatorY = pokemonStartY - TRAINER_POKEMON_GAP / 2;
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, separatorY);
+  ctx.lineTo(canvasWidth, separatorY);
+  ctx.stroke();
+
   // Draw each milestone as a column
   activeMilestones.forEach((milestone, colIndex) => {
     const x = CANVAS_PADDING + colIndex * (COL_WIDTH + COL_GAP);
