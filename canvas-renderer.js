@@ -15,8 +15,8 @@ const E4_TRAINER_GAP = 2;
 
 let spritesheetImg = null;
 let spritesheetLoaded = false;
-let trainerSheetImg = null;
-let trainerSheetLoaded = false;
+const trainerImages = {};
+let trainerImagesLoaded = false;
 
 function loadSpritesheet() {
   return new Promise((resolve, reject) => {
@@ -34,24 +34,23 @@ function loadSpritesheet() {
   });
 }
 
-function loadTrainerSheet() {
-  return new Promise((resolve, reject) => {
-    if (trainerSheetLoaded) {
-      resolve(trainerSheetImg);
-      return;
-    }
-    trainerSheetImg = new Image();
-    trainerSheetImg.onload = () => {
-      trainerSheetLoaded = true;
-      resolve(trainerSheetImg);
-    };
-    trainerSheetImg.onerror = reject;
-    trainerSheetImg.src = "assets/trainers-spritesheet.png";
+function loadTrainerImages() {
+  if (trainerImagesLoaded) return Promise.resolve(trainerImages);
+  const promises = TRAINER_SPRITES.map((name) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        trainerImages[name] = img;
+        resolve();
+      };
+      img.onerror = reject;
+      img.src = `assets/trainers/${name}.png`;
+    });
   });
-}
-
-function getTrainerCoords(trainerIndex) {
-  return { x: trainerIndex * TRAINER_SPRITE_SIZE, y: 0 };
+  return Promise.all(promises).then(() => {
+    trainerImagesLoaded = true;
+    return trainerImages;
+  });
 }
 
 // Compute the list of evolution family rows used across all milestones.
@@ -86,7 +85,7 @@ function buildFamilyMap(team) {
 }
 
 function renderJourney(canvas, journeyState) {
-  if (!spritesheetLoaded || !trainerSheetLoaded) return;
+  if (!spritesheetLoaded || !trainerImagesLoaded) return;
 
   const ctx = canvas.getContext("2d");
 
@@ -156,11 +155,11 @@ function renderJourney(canvas, journeyState) {
     y += LABEL_HEIGHT;
 
     // Trainer sprite(s)
-    if (Array.isArray(milestone.trainerIndex)) {
+    if (Array.isArray(milestone.trainerSprite)) {
       // Elite Four: 2-row team photo layout
       // Back row (3 trainers, smaller), front row (2 trainers, slightly larger)
-      const backRow = milestone.trainerIndex.slice(0, 3);
-      const frontRow = milestone.trainerIndex.slice(3);
+      const backRow = milestone.trainerSprite.slice(0, 3);
+      const frontRow = milestone.trainerSprite.slice(3);
       const backSize = 44;
       const frontSize = 52;
       const backGap = 2;
@@ -170,41 +169,44 @@ function renderJourney(canvas, journeyState) {
       const backTotalW = backRow.length * backSize + (backRow.length - 1) * backGap;
       const backStartX = x + (COL_WIDTH - backTotalW) / 2;
       const backY = y + (TRAINER_DRAW_SIZE - backSize - frontSize) / 2;
-      backRow.forEach((ti, i) => {
-        const coords = getTrainerCoords(ti);
-        ctx.drawImage(
-          trainerSheetImg,
-          coords.x, coords.y,
-          TRAINER_SPRITE_SIZE, TRAINER_SPRITE_SIZE,
-          backStartX + i * (backSize + backGap), backY,
-          backSize, backSize
-        );
+      backRow.forEach((name, i) => {
+        const tImg = trainerImages[name];
+        if (tImg) {
+          ctx.drawImage(
+            tImg,
+            0, 0, tImg.width, tImg.height,
+            backStartX + i * (backSize + backGap), backY,
+            backSize, backSize
+          );
+        }
       });
 
       // Front row - centered, slightly overlapping back row
       const frontTotalW = frontRow.length * frontSize + (frontRow.length - 1) * frontGap;
       const frontStartX = x + (COL_WIDTH - frontTotalW) / 2;
       const frontY = backY + backSize - 8;
-      frontRow.forEach((ti, i) => {
-        const coords = getTrainerCoords(ti);
-        ctx.drawImage(
-          trainerSheetImg,
-          coords.x, coords.y,
-          TRAINER_SPRITE_SIZE, TRAINER_SPRITE_SIZE,
-          frontStartX + i * (frontSize + frontGap), frontY,
-          frontSize, frontSize
-        );
+      frontRow.forEach((name, i) => {
+        const tImg = trainerImages[name];
+        if (tImg) {
+          ctx.drawImage(
+            tImg,
+            0, 0, tImg.width, tImg.height,
+            frontStartX + i * (frontSize + frontGap), frontY,
+            frontSize, frontSize
+          );
+        }
       });
     } else {
-      const coords = getTrainerCoords(milestone.trainerIndex);
-      const trainerX = x + (COL_WIDTH - TRAINER_DRAW_SIZE) / 2;
-      ctx.drawImage(
-        trainerSheetImg,
-        coords.x, coords.y,
-        TRAINER_SPRITE_SIZE, TRAINER_SPRITE_SIZE,
-        trainerX, y,
-        TRAINER_DRAW_SIZE, TRAINER_DRAW_SIZE
-      );
+      const tImg = trainerImages[milestone.trainerSprite];
+      if (tImg) {
+        const trainerX = x + (COL_WIDTH - TRAINER_DRAW_SIZE) / 2;
+        ctx.drawImage(
+          tImg,
+          0, 0, tImg.width, tImg.height,
+          trainerX, y,
+          TRAINER_DRAW_SIZE, TRAINER_DRAW_SIZE
+        );
+      }
     }
     y += trainerAreaHeight + TRAINER_POKEMON_GAP;
 

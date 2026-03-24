@@ -310,7 +310,7 @@ function createSlot(milestoneId, slotIndex) {
 // Initialize
 async function init() {
   initState();
-  await Promise.all([loadSpritesheet(), loadTrainerSheet()]);
+  await Promise.all([loadSpritesheet(), loadTrainerImages()]);
   buildUI();
   renderJourney(document.getElementById("journey-canvas"), journeyState);
 
